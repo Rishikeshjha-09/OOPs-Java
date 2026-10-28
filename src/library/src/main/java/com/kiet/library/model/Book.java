@@ -1,13 +1,40 @@
 
 package com.kiet.library.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+@Entity
+@Table(name = "books")
 public class Book {
 
+    @Id
+    @Column(name = "book_id")
+    @Positive(message = "Book ID must be greater than zero")
     private int bookId;
+
+    @NotBlank(message = "Title cannot be blank")
+    @Column(nullable = false, length = 200)
     private String title;
+
+    @NotBlank(message = "Author cannot be blank")
+    @Column(nullable = false, length = 150)
     private String author;
+
+    @NotBlank(message = "Category cannot be blank")
+    @Column(nullable = false, length = 100)
     private String category;
+
+    @Min(value = 1, message = "Publication year must be positive")
+    @Column(name = "publication_year", nullable = false)
     private int publicationYear;
+
+    @Column(nullable = false)
     private boolean available;
 
     public Book() {

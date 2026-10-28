@@ -1,84 +1,69 @@
 
-        package com.kiet.library.service;
+package com.kiet.library.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.kiet.library.model.Book;
+import com.kiet.library.repository.BookRepository;
 
 @Service
 public class BookService {
 
-    private final List<Book> books = new ArrayList<>();
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public List<Book> getAllBooks() {
-        return books;
+        return bookRepository.findAll();
     }
 
     public Book getBookById(int bookId) {
-        for (Book book : books) {
-            if (book.getBookId() == bookId) {
-                return book;
-            }
-        }
-        return null;
+        return bookRepository.findById(bookId).orElse(null);
     }
 
     public Book addBook(Book book) {
-        books.add(book);
-        return book;
+        return bookRepository.save(book);
     }
 
     public Book updateBook(int bookId, Book updatedBook) {
-        for (Book book : books) {
-            if (book.getBookId() == bookId) {
-                book.setTitle(updatedBook.getTitle());
-                book.setAuthor(updatedBook.getAuthor());
-                book.setCategory(updatedBook.getCategory());
-                book.setPublicationYear(
-                        updatedBook.getPublicationYear());
-                book.setAvailable(updatedBook.isAvailable());
+        Book book = getBookById(bookId);
 
-                return book;
-            }
+        if (book == null) {
+            return null;
         }
-        return null;
+
+        book.setTitle(updatedBook.getTitle());
+        book.setAuthor(updatedBook.getAuthor());
+        book.setCategory(updatedBook.getCategory());
+        book.setPublicationYear(updatedBook.getPublicationYear());
+        book.setAvailable(updatedBook.isAvailable());
+
+        return bookRepository.save(book);
     }
 
     public boolean deleteBook(int bookId) {
-        for (int i = 0; i < books.size(); i++) {
-            if (books.get(i).getBookId() == bookId) {
-                books.remove(i);
-                return true;
-            }
+        if (!bookRepository.existsById(bookId)) {
+            return false;
         }
-        return false;
+
+        bookRepository.deleteById(bookId);
+        return true;
     }
 
     public List<Book> searchByCategory(String category) {
-        List<Book> result = new ArrayList<>();
-
-        for (Book book : books) {
-            if (book.getCategory() != null
-                    && book.getCategory().equalsIgnoreCase(category)) {
-                result.add(book);
-            }
-        }
-
-        return result;
+        return bookRepository.findAll().stream()
+                .filter(book -> book.getCategory() != null
+                        && book.getCategory().equalsIgnoreCase(category))
+                .toList();
     }
 
     public List<Book> findPublishedFromYear(int fromYear) {
-        List<Book> result = new ArrayList<>();
-
-        for (Book book : books) {
-            if (book.getPublicationYear() >= fromYear) {
-                result.add(book);
-            }
-        }
-
-        return result;
+        return bookRepository.findAll().stream()
+                .filter(book -> book.getPublicationYear() >= fromYear)
+                .toList();
     }
 }
